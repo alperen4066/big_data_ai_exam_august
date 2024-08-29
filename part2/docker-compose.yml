@@ -7,7 +7,7 @@ services:
     ports:
       - 8001:80
   frontend:
-    image: nathansegers/big_data_and_ai-24_may_frontend:version1
+    image: nathansegers/big_data_and_ai-24_august_frontend:version1
     build:
       context: ./frontend
       dockerfile: Dockerfile
