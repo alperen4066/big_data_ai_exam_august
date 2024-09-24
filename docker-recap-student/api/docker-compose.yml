@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    command: ./start.sh
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    environment:
+      - API_PORT=8000
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=my_user
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=my_database
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app 
+    networks:
+      - web 
+      - database # Ensure this points to the correct path on your host system
+
+  db:
+    image: mysql:8.0
+    env_file:
+      - .mysql.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: my_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3309:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - web 
+      - database
+
+volumes:
+  db_data:
+
+networks:
+  web:
+  database:
