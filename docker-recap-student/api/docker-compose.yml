@@ -10,11 +10,11 @@ services:
       - "8000:8000"
     environment:
       - API_PORT=8000
-      - MYSQL_HOST=db
-      - MYSQL_PORT=3306
-      - MYSQL_USER=my_user
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=my_database
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     depends_on:
       db:
         condition: service_healthy
@@ -30,8 +30,8 @@ services:
       - .mysql.env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: my_database
-      MYSQL_USER: my_user
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3309:3306"
@@ -44,6 +44,22 @@ services:
       retries: 3
     networks:
       - web 
+      - database
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_PORT: ${MYSQL_PORT}
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - web
       - database
 
 volumes:

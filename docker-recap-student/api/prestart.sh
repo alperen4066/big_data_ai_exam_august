@@ -1,17 +1,18 @@
 #!/bin/sh
 
-# Check if new upgrade operations are detected
-if alembic check | grep -q "FAILED: New upgrade operations detected"; then
-  # New upgrade operations detected, generate and apply a new migration
-  CURRENT_DATE=$(date "+%Y-%m-%d")
-  if alembic revision --autogenerate -m "Atomically detected changes on $CURRENT_DATE" && alembic upgrade head; then
-    echo "Generated and applied migration for detected changes on $CURRENT_DATE."
-  else
-    echo "Error generating or applying migration for detected changes on $CURRENT_DATE."
-    exit 1
-  fi
+# Wait for the database to be ready
+echo "Checking database connection..."
+until mysql -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e "USE ${MYSQL_DATABASE};" >/dev/null 2>&1; do
+  echo "Waiting for the database connection..."
+  sleep 2
+done
+
+# Apply migrations to ensure the database is up-to-date
+if alembic upgrade head; then
+  echo "Database migrations applied successfully."
 else
-  echo "Existing migrations are up-to-date."
+  echo "Error applying database migrations."
+  exit 1
 fi
 
 # Continue running other services or commands
